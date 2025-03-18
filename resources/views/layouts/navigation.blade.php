@@ -11,10 +11,26 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    @if(auth()->check())
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        @if( auth()->user()->hasRole('client'))
+                            <x-nav-link :href="route('conferences.index')" :active="request()->routeIs('conferences.index')">
+                                {{ __('Conferences') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('my-conferences.index')" :active="request()->routeIs('my-conferences.index')">
+                                {{ __('My Conferences') }}
+                            </x-nav-link>
+                        @endif
+
+                        @if(auth()->user()->hasRole('admin'))
+                            <x-nav-link :href="route('conference-management.index')" :active="request()->routeIs('conference-management.index')">
+                                {{ __('Conference Management') }}
+                            </x-nav-link>
+                        @endif
+                    @endif
                 </div>
             </div>
 

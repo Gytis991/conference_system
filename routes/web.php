@@ -7,9 +7,22 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/conferences', function () {
+        return view('conferences.conferences');
+    })->name('conferences.index');
+
+    Route::get('/my-conferences', function () {
+        return view('conferences.my-conferences');
+    })->name('my-conferences.index');
+
+    Route::get('/conference-management', function () {
+        return view('conferences.conference-management');
+    })->name('conference-management.index');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
