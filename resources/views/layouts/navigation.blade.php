@@ -17,7 +17,7 @@
                             {{ __('Dashboard') }}
                         </x-nav-link>
                         @if( auth()->user()->hasRole('client'))
-                            <x-nav-link :href="route('conferences.index')" :active="request()->routeIs('conferences.index')">
+                            <x-nav-link :href="route('all-conferences.index')" :active="request()->routeIs('all-conferences.index')">
                                 {{ __('Conferences') }}
                             </x-nav-link>
                             <x-nav-link :href="route('my-conferences.index')" :active="request()->routeIs('my-conferences.index')">

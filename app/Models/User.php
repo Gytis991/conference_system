@@ -53,4 +53,11 @@ class User extends Authenticatable
         $roles = explode(',', $this->roles);
         return in_array($role, $roles);
     }
+
+    public function conferences()
+    {
+        return $this->belongsToMany(Conference::class, 'registrations')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 }
