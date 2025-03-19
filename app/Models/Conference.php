@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,8 @@ class Conference extends Model
         'organizer',
         'description',
         'start_date',
-        'end_date'
+        'end_date',
+        'status',
     ];
 
     public function users()

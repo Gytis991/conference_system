@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 
 class ConferenceController extends Controller
 {
+
+    public function manage(Request $request)
+    {
+        if (!$request->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $conferences = Conference::latest()->paginate(10);
+
+        return view('conferences.conference-management', compact('conferences'));
+    }
     public function create(Request $request)
     {
         $user = $request->user();
