@@ -4,12 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use Faker\Factory as Faker;
 
 class ProfileTest extends TestCase
 {
-
+    use DatabaseTransactions;
     public function test_profile_page_is_displayed(): void
     {
         $user = User::factory()->create();

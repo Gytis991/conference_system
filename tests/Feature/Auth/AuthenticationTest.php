@@ -4,10 +4,11 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class AuthenticationTest extends TestCase
 {
-
+    use DatabaseTransactions;
     public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');

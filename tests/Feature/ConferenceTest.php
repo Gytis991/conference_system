@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Conference;
 use App\Models\User;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ConferenceTest extends TestCase
 {
+    use DatabaseTransactions;
     /** @test */
     public function admin_can_create_a_conference()
     {

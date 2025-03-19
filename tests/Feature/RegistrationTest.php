@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Conference;
 use App\Models\User;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RegistrationTest extends TestCase
 {
 
+    use DatabaseTransactions;
     /** @test */
     public function client_can_register_for_a_conference()
     {

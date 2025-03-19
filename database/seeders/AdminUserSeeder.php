@@ -19,6 +19,14 @@ class AdminUserSeeder extends Seeder
             'admin,client',
         ];
 
+        User::create([
+            'name' => 'Admin',
+            'surname' => 'Admin',
+            'email' =>'admin@admin.com',
+            'roles' => $roleOptions[2],
+            'password' => Hash::make('password123'),
+        ]);
+
         for ($i = 1; $i <= 5; $i++) {
             User::create([
                 'name' => $faker->firstName,
