@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Conference;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ConferenceController extends Controller
 {
-
     public function manage(Request $request)
     {
         if (!$request->user()->hasRole('admin')) {
@@ -18,93 +18,109 @@ class ConferenceController extends Controller
 
         return view('conferences.conference-management', compact('conferences'));
     }
+
+    public function getOne($id)
+    {
+        $conference = Conference::findOrFail($id);
+
+        return view('conferences.conference-details', compact('conference'));
+    }
+
     public function create(Request $request)
     {
-        $user = $request->user();
-
-        if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$request->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized');
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'       => 'required|string|max:255',
             'description' => 'required|string',
-            'organizer' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'organizer'   => 'required|string|max:255',
+            'start_date'  => 'required|date',
+            'end_date'    => 'required|date|after_or_equal:start_date',
         ]);
 
-        Conference::create($validated);
+        $conference = Conference::create($validated);
 
-        return redirect()->back()->with('success', 'Conference created successfully.');
+        $message = sprintf('Conference "%s" created successfully.', $conference->title);
+
+        return redirect()->back()->with('success', $message);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Conference $conference)
     {
-        $user = $request->user();
-
-        if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$request->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'organizer' => 'required|string|max:255',
+        if (Carbon::parse($conference->start_date)->isPast()) {
+            $message = sprintf('Conference "%s" has already started. You can only update conferences that have not started yet.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        if ($conference->status === 'cancelled') {
+            $message = sprintf('Conference "%s" has been cancelled. You can no longer edit it.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        $validated = $request->validate([
+            'title'       => 'required|string|max:255',
+            'organizer'   => 'required|string|max:255',
             'description' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date'  => 'required|date',
+            'end_date'    => 'required|date|after_or_equal:start_date',
         ]);
 
-        $conference = Conference::findOrFail($id);
+        $conference->update($validated);
 
-        $conference->update([
-            'title' => $request->title,
-            'organizer' => $request->organizer,
-            'description' => $request->description,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-        ]);
+        $message = sprintf('Conference "%s" updated successfully.', $conference->title);
 
-        return response()->back()->with('success', 'Conference updated successfully.');
+        return redirect()->back()->with('success', $message);
     }
 
-    public function cancel(Request $request, $id)
+    public function cancel(Request $request, Conference $conference)
     {
-        $user = $request->user();
-
-        if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$request->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized');
         }
 
-        $conference = Conference::findOrFail($id);
+        if (Carbon::parse($conference->start_date)->isPast()) {
+            $message = sprintf('Conference "%s" has already started. You can only cancel conferences that have not started yet.', $conference->title);
 
-        if ($conference->start_date <= now()->toDateString()) {
-            return response()->back()->with('error', 'You can only cancel conferences that did not start yet');
+            return redirect()->back()->with('error', $message);
         }
+
+        if ($conference->status === 'cancelled') {
+            $message = sprintf('Conference "%s" is already cancelled.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
+
         $conference->update(['status' => 'cancelled']);
 
-        return redirect()->back()->with('success', 'Conference cancelled successfully.');
+        $message = sprintf('Conference "%s" cancelled successfully.', $conference->title);
+
+        return redirect()->back()->with('success', $message);
     }
+
     public function getAll(Request $request)
     {
-        $user = $request->user();
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$request->user()->hasRole('client')) {
+            abort(403, 'Unauthorized');
         }
 
-        //TODO: maybe pagination if will have time
-        $conferences = Conference::all();
-        return response()->json($conferences);
+        $conferences = Conference::latest()->paginate(10);
+
+        return view('conferences.all-conferences', compact('conferences'));
     }
 
-    public function getOne(Request $request, $id)
+    public function getMyConferences(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $conferences = $user->conferences()->paginate(10);
 
-        $conference = Conference::findOrFail($id);
-        return response()->json($conference);
+        return view('conferences.my-conferences', compact('conferences'));
     }
 }

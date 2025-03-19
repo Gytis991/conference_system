@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ConferenceController;
+use App\Http\Controllers\RegistrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/all-conferences', [ConferenceController::class, 'getAll'])->name('all-conferences.index');
     Route::get('/my-conferences', [ConferenceController::class, 'getMyConferences'])->name('my-conferences.index');
+
+    Route::post('/registrations', [RegistrationController::class, 'create'])->name('registrations.create');
+    Route::patch('/registrations/{conference}', [RegistrationController::class, 'cancel'])->name('registrations.cancel');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

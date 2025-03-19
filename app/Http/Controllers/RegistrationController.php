@@ -11,37 +11,59 @@ class RegistrationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !$user->hasRole('client')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->hasRole('client')) {
+            abort(403, 'Unauthorized');
         }
 
         $conference = Conference::findOrFail($request->conference_id);
 
+        if ($conference->users()->where('user_id', $user->id)->exists()) {
+            $message = sprintf('You are already registered for "%s" conference.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
+
         if ($conference->start_date <= now()->toDateString()) {
-            return response()->back()->with('error', 'You can only register to conferences that did not start yet');
+            $message = sprintf('Conference "%s" has already started, registration is not allowed.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
         }
 
         $conference->users()->attach($user->id, ['status' => 'confirmed']);
 
-        return response()->back()->with('success', 'Successfully registered to a conference');
+        $message = sprintf('Successfully registered to a conference "%s".', $conference->title);
+
+        return redirect()->back()->with('success', $message);
     }
 
-    public function cancel(Request $request,)
+    public function cancel(Request $request, Conference $conference)
     {
         $user = $request->user();
 
-        if (!$user || !$user->hasRole('client')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$user->hasRole('client')) {
+            abort(403, 'Unauthorized');
         }
 
-        $conference = Conference::findOrFail($request->conference_id);
+        $registration = $conference->users()->where('user_id', $user->id)->first();
+
+        if ($registration?->pivot->status === 'cancelled') {
+            $message = sprintf('Your registration for "%s" is already cancelled.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
 
         if ($conference->start_date <= now()->toDateString()) {
-            return response()->back()->with('error', 'You can only register to conferences that did not start yet');
+            $message = sprintf('Conference "%s" has already started, cancellation is not allowed.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
         }
 
-        $conference->users()->attach($user->id, ['status' => 'confirmed']);
+        $conference->users()->updateExistingPivot($user->id, [
+            'status' => 'cancelled',
+        ]);
 
-        return response()->back()->with('success', 'Successfully registered to a conference');
+        $message = sprintf('Successfully cancelled registration for conference "%s".', $conference->title);
+
+        return redirect()->back()->with('success', $message);
     }
 }
