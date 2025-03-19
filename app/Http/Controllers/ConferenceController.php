@@ -118,6 +118,10 @@ class ConferenceController extends Controller
 
     public function getMyConferences(Request $request)
     {
+        if (!$request->user()->hasRole('client')) {
+            abort(403, 'Unauthorized');
+        }
+
         $user = $request->user();
         $conferences = $user->conferences()->paginate(10);
 

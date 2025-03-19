@@ -29,6 +29,9 @@
                             <x-nav-link :href="route('conference-management.index')" :active="request()->routeIs('conference-management.index')">
                                 {{ __('Conference Management') }}
                             </x-nav-link>
+                            <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.index')">
+                                {{ __('Clients') }}
+                            </x-nav-link>
                         @endif
                     @endif
                 </div>
