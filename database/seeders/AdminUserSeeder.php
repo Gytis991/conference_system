@@ -24,7 +24,7 @@ class AdminUserSeeder extends Seeder
                 'name' => $faker->firstName,
                 'surname' => $faker->lastName,
                 'email' => $faker->unique()->safeEmail,
-                'roles' => $faker->randomElement($roleOptions),
+                'roles' => $roleOptions[$i % 3],
                 'password' => Hash::make('password123'),
             ]);
         }

@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+use Faker\Factory as Faker;
 
 class ProfileTest extends TestCase
 {
-    use RefreshDatabase;
 
     public function test_profile_page_is_displayed(): void
     {
@@ -25,11 +25,16 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
+        $faker = Faker::create();
+
+        $email = $faker->unique()->safeEmail;
+
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
+                'name' => 'Test',
+                'surname' => 'User',
+                'email' => $email,
             ]);
 
         $response
@@ -38,8 +43,8 @@ class ProfileTest extends TestCase
 
         $user->refresh();
 
-        $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('Test', $user->name);
+        $this->assertSame($email, $user->email);
         $this->assertNull($user->email_verified_at);
     }
 
@@ -50,7 +55,8 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => 'Test User',
+                'name' => 'Test',
+                'surname' => 'User',
                 'email' => $user->email,
             ]);
 
