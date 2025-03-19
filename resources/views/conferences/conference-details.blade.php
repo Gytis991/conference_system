@@ -18,7 +18,7 @@
 
                 <h2 class="text-xl font-semibold mt-6">Registered Attendees</h2>
                 <ul class="list-disc list-inside ml-4">
-                    @foreach ($conference->users as $user)
+                    @foreach ($conference->confirmedUsers as $user)
                         <li class="py-1">{{ $user->name }} ({{ $user->email }})</li>
                     @endforeach
                 </ul>

@@ -24,4 +24,10 @@ class Conference extends Model
             ->withPivot('status')
             ->withTimestamps();
     }
+
+    public function confirmedUsers()
+    {
+        return $this->belongsToMany(User::class, 'registrations')
+            ->wherePivot('status', 'confirmed');
+    }
 }

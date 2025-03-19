@@ -17,7 +17,7 @@ class RegistrationController extends Controller
 
         $conference = Conference::findOrFail($request->conference_id);
 
-        if ($conference->users()->where('user_id', $user->id)->exists()) {
+        if ($conference->users()->where('user_id', $user->id)->wherePivot('status', 'confirmed')->exists()) {
             $message = sprintf('You are already registered for "%s" conference.', $conference->title);
 
             return redirect()->back()->with('error', $message);
@@ -29,7 +29,18 @@ class RegistrationController extends Controller
             return redirect()->back()->with('error', $message);
         }
 
-        $conference->users()->attach($user->id, ['status' => 'confirmed']);
+        if ($conference->status === 'cancelled') {
+            $message = sprintf('Conference "%s" has been cancelled, registration is not allowed.', $conference->title);
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        if ($conference->users()->where('user_id', $user->id)) {
+            $conference->users()->updateExistingPivot($user->id, ['status' => 'confirmed']);
+        }
+        else {
+            $conference->users()->attach($user->id, ['status' => 'confirmed']);
+        }
 
         $message = sprintf('Successfully registered to a conference "%s".', $conference->title);
 
